@@ -10,7 +10,7 @@ module mcs40_clk_gen_tb();
 	always
 		#(96) clk <= !clk;
 
-	mcs40_clk_gen_tb generator(.clk_i(clk),.PHI1_o(phi1),.PHI2_o(phi2));
+	mcs40_clk_gen generator(.clk_i(clk),.PHI1_o(phi1),.PHI2_o(phi2));
 
 	initial
 	begin
