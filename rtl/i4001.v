@@ -75,12 +75,15 @@ module i4001
     //----------------------------------------------------------------
     always @(posedge clk_i)
     begin
-        if ((PHI1_i == 1'b1) && (prev_phi1_r == 1'b0)) //  phi1 edge
+        if (SYNC_i==1'b1)
         begin
-        end
-        if ((PHI2_i == 1'b1) && (prev_phi2_r == 1'b0)) //  phi2 edge
-        begin
-            state_r <= state_r + 3'b001; // next state
+            if ((PHI1_i == 1'b1) && (prev_phi1_r == 1'b0)) //  phi1 edge
+            begin
+            end
+            if ((PHI2_i == 1'b1) && (prev_phi2_r == 1'b0)) //  phi2 edge
+            begin
+                state_r <= state_r + 3'b001; // next state
+            end
         end
         prev_sync_r <= SYNC_i;
         prev_state_r <= state_r;
