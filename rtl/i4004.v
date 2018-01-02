@@ -49,9 +49,14 @@ module i4004(
     reg [2:0] prev_state_r;
 
     reg [11:0] PC_r;
+    reg [3:0] OPR_r;
+    reg [3:0] OPA_r;
 
     reg [3:0] data_r;
     reg bus_state_r;
+
+    reg [3:0] ACC_r;
+    reg [3:0] R_r[0:15];
 
     //----------------------------------------------------------------
     // Initial state set
@@ -63,7 +68,24 @@ module i4004(
         prev_phi2_r = 0;
         state_r = STATE_X3;
         PC_r = 12'b000000000000;        
-        bus_state_r = 0;        
+        bus_state_r = 0;     
+        ACC_r = 4'b0000;   
+        R_r[0] = 4'b0000;
+        R_r[1] = 4'b0000;
+        R_r[2] = 4'b0000;
+        R_r[3] = 4'b0000;
+        R_r[4] = 4'b0000;
+        R_r[5] = 4'b0000;
+        R_r[6] = 4'b0000;
+        R_r[7] = 4'b0000;
+        R_r[8] = 4'b0000;
+        R_r[9] = 4'b0000;
+        R_r[10] = 4'b0000;
+        R_r[11] = 4'b0000;
+        R_r[12] = 4'b0000;
+        R_r[13] = 4'b0000;
+        R_r[14] = 4'b0000;
+        R_r[15] = 4'b0000;
     end
 
     //----------------------------------------------------------------
@@ -123,4 +145,8 @@ module i4004(
             data_r[3:0] = PC_r[7:4];
         else if (state_r==STATE_A3) 
             data_r[3:0] = PC_r[11:8];
+        else if (state_r==STATE_M1) 
+            OPR_r = D_io[3:0];
+        else if (state_r==STATE_M2) 
+            OPA_r = D_io[3:0];
 endmodule
