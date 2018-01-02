@@ -30,7 +30,7 @@ module i4001
 )
 (
     input clk_i, // main design clock, not a pin
-    output reg [3:0] D_o,
+    inout [3:0] D_io,
     input PHI1_i,
     input PHI2_i,
     input SYNC_i,
@@ -39,11 +39,86 @@ module i4001
     input CL_i,
     input RESET_i
 );
-  reg [7:0] store[0:255];
+    localparam STATE_A1 = 3'b000;
+    localparam STATE_A2 = 3'b001;
+    localparam STATE_A3 = 3'b010;
+    localparam STATE_M1 = 3'b011;
+    localparam STATE_M2 = 3'b100;
+    localparam STATE_X1 = 3'b101;
+    localparam STATE_X2 = 3'b110;
+    localparam STATE_X3 = 3'b111;
 
-  initial
-  begin
-	$readmemh(ROM_FILENAME, store);
-  end
+    reg prev_phi1_r;
+    reg prev_phi2_r;
+    reg [2:0] state_r;
+    reg [2:0] prev_state_r;
 
+    reg [7:0] store_r[0:255];
+    reg [3:0] data_r;
+    reg bus_state_r;
+    reg [7:0] addr_r;
+    reg [3:0] id_r;
+    reg prev_sync_r;
+    
+
+    //----------------------------------------------------------------
+    // Initial state set
+    //----------------------------------------------------------------
+    initial
+    begin
+	    $readmemh(ROM_FILENAME, store_r);
+        bus_state_r = 1'b1;
+    end
+
+    //----------------------------------------------------------------
+    // Main state machine
+    //----------------------------------------------------------------
+    always @(posedge clk_i)
+    begin
+        if ((PHI1_i == 1'b1) && (prev_phi1_r == 1'b0)) //  phi1 edge
+        begin
+        end
+        if ((PHI2_i == 1'b1) && (prev_phi2_r == 1'b0)) //  phi2 edge
+        begin
+            state_r <= state_r + 3'b001; // next state
+        end
+        prev_sync_r <= SYNC_i;
+        prev_state_r <= state_r;
+        prev_phi1_r <= PHI1_i;
+        prev_phi2_r <= PHI2_i;
+    end
+
+    always @*
+        if ((prev_sync_r==1'b0) && (SYNC_i==1'b1))
+            state_r <= 3'b000;
+
+    //----------------------------------------------------------------
+    // Setting data/address bus
+    //----------------------------------------------------------------
+
+    assign D_io[3:0] = bus_state_r ? 4'bzzzz : data_r[3:0];
+
+    //----------------------------------------------------------------
+    // Bus state setting
+    //----------------------------------------------------------------
+    always @*
+        if ((state_r==STATE_M1) || (state_r==STATE_M2))
+            bus_state_r = 1'b0;
+        else 
+            bus_state_r = 1'b1;
+
+    //----------------------------------------------------------------
+    // Address on databus
+    //----------------------------------------------------------------    
+    always @*
+        if (state_r==STATE_A1)
+            addr_r[3:0] = D_io[3:0];
+        else if (state_r==STATE_A2) 
+            addr_r[7:4] = D_io[3:0];
+        else if (state_r==STATE_A3) 
+            id_r[3:0] = D_io[3:0];
+        else if (state_r==STATE_M1) 
+            data_r[3:0] = store_r[addr_r][7:4];
+        else if (state_r==STATE_M2) 
+            data_r[3:0] = store_r[addr_r][3:0];
 endmodule

@@ -46,6 +46,12 @@ module i4004(
     reg prev_phi1_r;
     reg prev_phi2_r;
     reg [2:0] state_r;
+    reg [2:0] prev_state_r;
+
+    reg [11:0] PC_r;
+
+    reg [3:0] data_r;
+    reg bus_state_r;
 
     //----------------------------------------------------------------
     // Initial state set
@@ -56,6 +62,8 @@ module i4004(
         prev_phi1_r = 0;
         prev_phi2_r = 0;
         state_r = STATE_X3;
+        PC_r = 12'b000000000000;        
+        bus_state_r = 0;        
     end
 
     //----------------------------------------------------------------
@@ -71,6 +79,12 @@ module i4004(
             state_r <= state_r + 3'b001; // next state
         end
 
+        if ((state_r == STATE_X2) && (prev_state_r != STATE_X2)) //  when executing X2
+        begin
+            PC_r <= PC_r + 1;
+        end
+
+        prev_state_r <= state_r;
         prev_phi1_r <= PHI1_i;
         prev_phi2_r <= PHI2_i;
     end
@@ -80,7 +94,33 @@ module i4004(
     //----------------------------------------------------------------
     always @*
         if (state_r==STATE_X3) 
-            SYNC_o <= 0;
+            SYNC_o = 0;
         else
-            SYNC_o <= 1;
+            SYNC_o = 1;
+
+    //----------------------------------------------------------------
+    // Setting data/address bus
+    //----------------------------------------------------------------
+
+    assign D_io[3:0] = bus_state_r ? 4'bzzzz : data_r[3:0];
+
+    //----------------------------------------------------------------
+    // Bus state setting
+    //----------------------------------------------------------------
+    always @*
+        if ((state_r==STATE_A1) || (state_r==STATE_A2) || (state_r==STATE_A3))
+            bus_state_r = 1'b0;
+        else 
+            bus_state_r = 1'b1;
+
+    //----------------------------------------------------------------
+    // Address on databus
+    //----------------------------------------------------------------    
+    always @*
+        if (state_r==STATE_A1)
+            data_r[3:0] = PC_r[3:0];
+        else if (state_r==STATE_A2) 
+            data_r[3:0] = PC_r[7:4];
+        else if (state_r==STATE_A3) 
+            data_r[3:0] = PC_r[11:8];
 endmodule
