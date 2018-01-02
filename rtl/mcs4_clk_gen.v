@@ -7,6 +7,12 @@ module mcs4_clk_gen(
     output reg PHI2_o
 );
     reg[2:0] r_clk_count = 3'b000;
+    
+    initial
+    begin
+        PHI1_o <= 1;
+        PHI2_o <= 1;
+    end
 
     always @(posedge clk_i)
     begin

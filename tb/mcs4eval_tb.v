@@ -11,6 +11,7 @@ module mcs4eval_tb();
 		#(96) clk <= !clk;
 
 	i4001 #(.ROM_FILENAME("build/roms/mcs4eval.mem")) rom(.clk_i(clk),.PHI1_i(phi1),.PHI2_i(phi2));
+	i4004 cpu(.clk_i(clk),.PHI1_i(phi1),.PHI2_i(phi2));
 
 	mcs4_clk_gen generator(.clk_i(clk),.PHI1_o(phi1),.PHI2_o(phi2));
 
@@ -18,7 +19,7 @@ module mcs4eval_tb();
 	begin
 		$dumpfile("mcs4eval_tb.vcd");
 		$dumpvars(0, mcs4eval_tb);
-		#2500
+		#25000
 		$finish;
 	end
 endmodule

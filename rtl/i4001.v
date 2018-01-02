@@ -23,7 +23,11 @@
 
 */
 module i4001
-#(parameter ROM_FILENAME="")
+#(
+    parameter ROM_FILENAME="",
+    parameter CHIP_NUMBER=4'b0000,
+    parameter IO_MASK=4'b0000
+)
 (
     input clk_i, // main design clock, not a pin
     output reg [3:0] D_o,
