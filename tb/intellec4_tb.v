@@ -1,8 +1,8 @@
 `timescale 1ns/1ns
 /*
-	Testbench for MCS-40 clock generator
+	Testbench for Intellec-4
 */
-module mcs40_clk_gen_tb();
+module intellec4_tb();
 	reg clk = 1'b0;
 	wire phi1;
 	wire phi2;
@@ -14,8 +14,8 @@ module mcs40_clk_gen_tb();
 
 	initial
 	begin
-		$dumpfile("mcs40_clk_gen_tb.vcd");
-		$dumpvars(0, mcs40_clk_gen_tb);
+		$dumpfile("intellec4_tb.vcd");
+		$dumpvars(0, intellec4_tb);
 		#2500
 		$finish;
 	end
