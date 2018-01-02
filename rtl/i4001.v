@@ -22,7 +22,9 @@
     RESET       - RESET
 
 */
-module i4001(
+module i4001
+#(parameter ROM_FILENAME="")
+(
     input clk_i, // main design clock, not a pin
     output reg [3:0] D_o,
     input PHI1_i,
@@ -33,5 +35,11 @@ module i4001(
     input CL_i,
     input RESET_i
 );
+  reg [7:0] store[0:255];
+
+  initial
+  begin
+	$readmemh(ROM_FILENAME, store);
+  end
 
 endmodule

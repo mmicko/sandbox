@@ -6,12 +6,15 @@ SILENT_OUT := >/dev/null
 EXE	:=
 endif
 
-.PHONY: all tb clean lint
+.PHONY: all tb clean lint roms
 
-all: tb
+all: roms tb
 
 build:
 	@mkdir build
+
+build/roms:
+	@mkdir build/roms
 
 tb: build build/intellec4.out build/mcs4eval.out
 	@vvp build/intellec4.out
@@ -22,6 +25,9 @@ build/mcs4eval.out: build rtl/i4001.v rtl/i4002.v rtl/i4004.v rtl/mcs4_clk_gen.v
 
 build/intellec4.out: build rtl/i4001.v rtl/i4002.v rtl/i4003.v rtl/i4004.v rtl/mcs4_clk_gen.v tb/intellec4_tb.v
 	@iverilog -o build/intellec4.out -s intellec4_tb rtl/i4001.v rtl/i4002.v rtl/i4003.v rtl/i4004.v rtl/mcs4_clk_gen.v tb/intellec4_tb.v
+
+roms: build build/roms
+	@python scripts/genroms.py roms/mcs4eval/mcs4eval.bin build/roms/mcs4eval.mem	
 
 lint: rtl/i4001.v rtl/i4002.v rtl/i4003.v rtl/i4004.v rtl/mcs4_clk_gen.v
 	@verilator --lint-only -Wall --top-module mcs4_clk_gen rtl/i4001.v rtl/i4002.v rtl/i4003.v rtl/i4004.v rtl/mcs4_clk_gen.v
