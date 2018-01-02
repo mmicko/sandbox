@@ -28,4 +28,5 @@ lint: rtl/i4001.v rtl/i4002.v rtl/i4003.v rtl/i4004.v rtl/mcs4_clk_gen.v
 
 clean:
 	$(RM) -f -r build
+	$(RM) -f -r *.vcd
 
