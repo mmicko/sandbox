@@ -1,8 +1,8 @@
 `timescale 1ns/1ns
 /*
-	Testbench for Intellec-4
+	Testbench for MCS-4 Evaluation board
 */
-module intellec4_tb();
+module mcs4eval_tb();
 	reg clk = 1'b0;
 	wire phi1;
 	wire phi2;
@@ -14,8 +14,8 @@ module intellec4_tb();
 
 	initial
 	begin
-		$dumpfile("intellec4_tb.vcd");
-		$dumpvars(0, intellec4_tb);
+		$dumpfile("mcs4eval_tb.vcd");
+		$dumpvars(0, mcs4eval_tb);
 		#2500
 		$finish;
 	end

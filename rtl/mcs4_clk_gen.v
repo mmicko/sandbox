@@ -1,7 +1,7 @@
 /*
-    Two phase clock generator for MCS-40
+    Two phase clock generator for MCS-4
 */
-module mcs40_clk_gen(
+module mcs4_clk_gen(
     input clk_i, // main design clock, not a pin
     output reg PHI1_o,
     output reg PHI2_o
