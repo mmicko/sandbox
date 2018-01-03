@@ -22,7 +22,7 @@ module mcs4eval_tb();
 	begin
 		$dumpfile("mcs4eval_tb.vcd");
 		$dumpvars(0, mcs4eval_tb);
-		#25000
+		#3000000
 		$finish;
 	end
 endmodule

@@ -106,7 +106,7 @@ module i4004(
             state_r <= state_r + 3'b001; // next state
         end
 
-        if ((state_r == STATE_X2) && (prev_state_r != STATE_X2)) //  when executing X2
+        if ((state_r == STATE_X2) && (prev_state_r != STATE_X2)) //  when executing X2	
         begin
             PC_r <= PC_r + 1;
         end
@@ -143,145 +143,217 @@ module i4004(
     //----------------------------------------------------------------
     // Address on databus
     //----------------------------------------------------------------    
-    always @*
-        if (state_r==STATE_A1)
-            data_r[3:0] = PC_r[3:0];
+    always @(posedge clk_i)
+	begin
+		if (state_r==prev_state_r)
+		begin
+		end 
+        else if (state_r==STATE_A1)
+            data_r[3:0] <= PC_r[3:0];
         else if (state_r==STATE_A2) 
-            data_r[3:0] = PC_r[7:4];
+            data_r[3:0] <= PC_r[7:4];
         else if (state_r==STATE_A3) 
-            data_r[3:0] = PC_r[11:8];
+            data_r[3:0] <= PC_r[11:8];
         else if (state_r==STATE_M1) 
-            TEMP_r[7:4] = D_io[3:0];
+            TEMP_r[7:4] <= D_io[3:0];
         else if (state_r==STATE_M2)   
 		begin
-			TEMP_r[3:0] = D_io[3:0];
+			//$display("PC : %03h",PC_r[11:0]);
+			TEMP_r[3:0] <= D_io[3:0];
 			if (extended_r == 0)
 			begin		
 				if ((TEMP_r[7:4]==4'b0001) || 
 					(TEMP_r[7:4]==4'b0100) || 
 					(TEMP_r[7:4]==4'b0101) || 
 					(TEMP_r[7:4]==4'b0111) || 
-					((TEMP_r[7:4]==4'b0010) && (TEMP_r[0]==1'b0)))
+					((TEMP_r[7:4]==4'b0010) && (D_io[0]==1'b0)))
 				begin
-					extended_r = 1;
+					extended_r <= 1;
+					TEMP_r[11:8] <= D_io[3:0];
+					OPR_r <= TEMP_r[7:4];
 				end
 				else
 				begin
-					extended_r = 0;
-					OPR_r = TEMP_r[7:4];
-					OPA_r = TEMP_r[3:0];
+					extended_r <= 0;
+					OPR_r <= TEMP_r[7:4];
+					OPA_r <= D_io[3:0];
 				end
 			end
+			else
+			begin
+			  extended_r <= 0;
+			end
 		end
-        else if (state_r==STATE_X1) 
+        else if (state_r == STATE_X1 && extended_r==0)
         begin
+			$display("%03h",PC_r[11:0]);
 			case(OPR_r)
-				4'b0000 : ;// NOP 
+				4'b0000 : $display("NOP");// NOP 
 				4'b0001 : begin // JCN *
+						  $display("JCN %1h %02h",TEMP_r[11:8],TEMP_r[7:0]);
 						  end
 				4'b0010 : begin // FIM */ SRC 
+						  if (TEMP_r[8]==1'b0)
+						  begin
+						  	$display("FIM %d %2h",TEMP_r[11:9],TEMP_r[7:0]);
+						  end
+						  else
+						  begin
+							$display("SCR %d",TEMP_r[11:9]);
+						  end						
 						  end
 				4'b0011 : begin // FIN / JIN
+						  if (TEMP_r[8]==1'b0)
+						  begin
+						  	$display("FIN %d",TEMP_r[11:9]);
+						  end
+						  else
+						  begin
+							$display("JIN %d",TEMP_r[11:9]);
+						  end						
 						  end
 				4'b0100 : begin // JUN *
+						  $display("JUN %3h",TEMP_r[11:0]);
 						  end
 				4'b0101 : begin // JMS *
+						  $display("JMS %3h",TEMP_r[11:0]);
 						  end
 				4'b0110 : begin // INC 
+						  $display("INC %d",OPA_r[3:0]);
 						  end
 				4'b0111 : begin // ISZ *
+						  $display("ISZ %d %02h",TEMP_r[11:8],TEMP_r[7:0]);
 						  end
 				4'b1000 : begin // ADD 
+						  $display("ADD %d",OPA_r[3:0]);
 						  end
 				4'b1001 : begin // SUB 
+						  $display("SUB %d",OPA_r[3:0]);
 						  end
 				4'b1010 : begin // LD
+						  $display("LD %d",OPA_r[3:0]);
 						  end
 				4'b1011 : begin // XCH
+						  $display("XCH %d",OPA_r[3:0]);
 						  end
 				4'b1100 : begin // BBL 
+						  $display("BBL 0x%1h",OPA_r[3:0]);
 						  end
 				4'b1101 : begin // LDM 
+						  $display("LDM 0x%1h",OPA_r[3:0]);
 						  end
 				4'b1110 : begin // I/O and RAM 
 						  case(OPA_r)
 							4'b0000 : begin // WRM
+									  $display("WRM");
 									  end
 							4'b0001	: begin // WMP
+									  $display("WPM");
 									  end
 							4'b0010 : begin // WRR
+									  $display("WRR");
 									  end
 							4'b0011 : begin // ???
+									  $display("???");
 									  end
 							4'b0100 : begin // WR0
+									  $display("WR0");
 									  end
 							4'b0101 : begin // WR1
+									  $display("WR1");
 									  end
 							4'b0110 : begin // WR2
+									  $display("WR2");
 									  end
 							4'b0111 : begin // WR3
+									  $display("WR3");
 									  end
 							4'b1000 : begin // SBM
+									  $display("SBM");
 									  end
 							4'b1001 : begin // RDM
+									  $display("RDM");
 									  end
 							4'b1010 : begin // RDR
+									  $display("RDR");
 									  end
 							4'b1011 : begin // ADM
+								      $display("ADM");
 									  end
 							4'b1100 : begin // RD0
+									  $display("RD0");
 									  end
 							4'b1101 : begin // RD1
+									  $display("RD1");
 									  end
 							4'b1110 : begin // RD2
+									  $display("RD2");
 									  end
 							4'b1111 : begin // RD3
+									  $display("RD3");
 									  end
 						  endcase
 						  end
 				4'b1111 : begin // ACC group
 						  case(OPA_r)
 							4'b0000 : begin // CLB
+									  $display("CLB");
 									  ACC_r <= 4'b0000;
-									  CARRY_r <= 1'b0;
+									  CARRY_r <= 1'b0;									  
 									  end
 							4'b0001	: begin // CLC
+							   		  $display("CLC");
 									  CARRY_r <= 1'b0;
 									  end
 							4'b0010 : begin // IAC
+									  $display("IAC");
 									  { CARRY_r, ACC_r } <= ACC_r + 4'b0001;
 									  end
 							4'b0011 : begin // CMC
+							 		  $display("CMC");
 									  CARRY_r <= ~CARRY_r;
 									  end
 							4'b0100 : begin // CMA
+									  $display("CMA");
 									  ACC_r <= ~ACC_r;
 									  end
 							4'b0101 : begin // RAL
+									  $display("RAL");
 									  end
 							4'b0110 : begin // RAR
+									  $display("RAR");
 									  end
 							4'b0111 : begin // TCC
+									  $display("TCC");
 									  end
 							4'b1000 : begin // DAC
+									  $display("DAC");
 									  { CARRY_r, ACC_r } <= ACC_r - 4'b0001;
 									  end
-							4'b1001 : begin // TCS						
+							4'b1001 : begin // TCS
+									  $display("TCS");					
 									  end
 							4'b1010 : begin // STC
+									  $display("STC");
 									  end
 							4'b1011 : begin // DAA
+									  $display("DAA");
 									  end
 							4'b1100 : begin // KBP
+									  $display("KBP");
 									  end
 							4'b1101 : begin // DCL
+									  $display("DCL");
 									  end
 							4'b1110 : begin // ???
+									  $display("???");
 									  end
 							4'b1111 : begin // ???
+									  $display("???");
 									  end
 						  endcase
 						  end
 			endcase
 		end
+	end
 endmodule
