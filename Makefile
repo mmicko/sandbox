@@ -14,7 +14,11 @@ build:
 	@mkdir build
 
 build/roms:
+ifeq ($(OS),Windows_NT)
+	@mkdir build\roms
+else
 	@mkdir build/roms
+endif
 
 tb: build build/intellec4.out build/mcs4eval.out
 	@vvp build/intellec4.out
