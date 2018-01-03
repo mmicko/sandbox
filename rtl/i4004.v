@@ -56,7 +56,14 @@ module i4004(
     reg bus_state_r;
 
     reg [3:0] ACC_r;
-    reg [3:0] R_r[0:15];
+	reg CARRY_r; 
+    reg [7:0] RP_r[0:7];
+	reg [11:0] STACK_r[0:2];
+	
+	reg [1:0] SP_r;
+	
+	reg [11:0] TEMP_r;
+	reg extended_r;
 
     //----------------------------------------------------------------
     // Initial state set
@@ -67,25 +74,23 @@ module i4004(
         prev_phi1_r = 0;
         prev_phi2_r = 0;
         state_r = STATE_X3;
-        PC_r = 12'b000000000000;        
+        PC_r = 12'b000000000000;
+		STACK_r[0] = 12'b000000000000;
+		STACK_r[1] = 12'b000000000000;
+		STACK_r[2] = 12'b000000000000;
+		SP_r = 2'b00;
         bus_state_r = 0;     
         ACC_r = 4'b0000;   
-        R_r[0] = 4'b0000;
-        R_r[1] = 4'b0000;
-        R_r[2] = 4'b0000;
-        R_r[3] = 4'b0000;
-        R_r[4] = 4'b0000;
-        R_r[5] = 4'b0000;
-        R_r[6] = 4'b0000;
-        R_r[7] = 4'b0000;
-        R_r[8] = 4'b0000;
-        R_r[9] = 4'b0000;
-        R_r[10] = 4'b0000;
-        R_r[11] = 4'b0000;
-        R_r[12] = 4'b0000;
-        R_r[13] = 4'b0000;
-        R_r[14] = 4'b0000;
-        R_r[15] = 4'b0000;
+		CARRY_r = 1'b0;
+        RP_r[0] = 4'b0000;
+        RP_r[1] = 4'b0000;
+        RP_r[2] = 4'b0000;
+        RP_r[3] = 4'b0000;
+        RP_r[4] = 4'b0000;
+        RP_r[5] = 4'b0000;
+        RP_r[6] = 4'b0000;
+        RP_r[7] = 4'b0000;
+		extended_r = 0;
     end
 
     //----------------------------------------------------------------
@@ -146,7 +151,137 @@ module i4004(
         else if (state_r==STATE_A3) 
             data_r[3:0] = PC_r[11:8];
         else if (state_r==STATE_M1) 
-            OPR_r = D_io[3:0];
-        else if (state_r==STATE_M2) 
-            OPA_r = D_io[3:0];
+            TEMP_r[7:4] = D_io[3:0];
+        else if (state_r==STATE_M2)   
+		begin
+			TEMP_r[3:0] = D_io[3:0];
+			if (extended_r == 0)
+			begin		
+				if ((TEMP_r[7:4]==4'b0001) || 
+					(TEMP_r[7:4]==4'b0100) || 
+					(TEMP_r[7:4]==4'b0101) || 
+					(TEMP_r[7:4]==4'b0111) || 
+					((TEMP_r[7:4]==4'b0010) && (TEMP_r[0]==1'b0)))
+				begin
+					extended_r = 1;
+				end
+				else
+				begin
+					extended_r = 0;
+					OPR_r = TEMP_r[7:4];
+					OPA_r = TEMP_r[3:0];
+				end
+			end
+		end
+        else if (state_r==STATE_X1) 
+        begin
+			case(OPR_r)
+				4'b0000 : ;// NOP 
+				4'b0001 : begin // JCN *
+						  end
+				4'b0010 : begin // FIM */ SRC 
+						  end
+				4'b0011 : begin // FIN / JIN
+						  end
+				4'b0100 : begin // JUN *
+						  end
+				4'b0101 : begin // JMS *
+						  end
+				4'b0110 : begin // INC 
+						  end
+				4'b0111 : begin // ISZ *
+						  end
+				4'b1000 : begin // ADD 
+						  end
+				4'b1001 : begin // SUB 
+						  end
+				4'b1010 : begin // LD
+						  end
+				4'b1011 : begin // XCH
+						  end
+				4'b1100 : begin // BBL 
+						  end
+				4'b1101 : begin // LDM 
+						  end
+				4'b1110 : begin // I/O and RAM 
+						  case(OPA_r)
+							4'b0000 : begin // WRM
+									  end
+							4'b0001	: begin // WMP
+									  end
+							4'b0010 : begin // WRR
+									  end
+							4'b0011 : begin // ???
+									  end
+							4'b0100 : begin // WR0
+									  end
+							4'b0101 : begin // WR1
+									  end
+							4'b0110 : begin // WR2
+									  end
+							4'b0111 : begin // WR3
+									  end
+							4'b1000 : begin // SBM
+									  end
+							4'b1001 : begin // RDM
+									  end
+							4'b1010 : begin // RDR
+									  end
+							4'b1011 : begin // ADM
+									  end
+							4'b1100 : begin // RD0
+									  end
+							4'b1101 : begin // RD1
+									  end
+							4'b1110 : begin // RD2
+									  end
+							4'b1111 : begin // RD3
+									  end
+						  endcase
+						  end
+				4'b1111 : begin // ACC group
+						  case(OPA_r)
+							4'b0000 : begin // CLB
+									  ACC_r <= 4'b0000;
+									  CARRY_r <= 1'b0;
+									  end
+							4'b0001	: begin // CLC
+									  CARRY_r <= 1'b0;
+									  end
+							4'b0010 : begin // IAC
+									  { CARRY_r, ACC_r } <= ACC_r + 4'b0001;
+									  end
+							4'b0011 : begin // CMC
+									  CARRY_r <= ~CARRY_r;
+									  end
+							4'b0100 : begin // CMA
+									  ACC_r <= ~ACC_r;
+									  end
+							4'b0101 : begin // RAL
+									  end
+							4'b0110 : begin // RAR
+									  end
+							4'b0111 : begin // TCC
+									  end
+							4'b1000 : begin // DAC
+									  { CARRY_r, ACC_r } <= ACC_r - 4'b0001;
+									  end
+							4'b1001 : begin // TCS						
+									  end
+							4'b1010 : begin // STC
+									  end
+							4'b1011 : begin // DAA
+									  end
+							4'b1100 : begin // KBP
+									  end
+							4'b1101 : begin // DCL
+									  end
+							4'b1110 : begin // ???
+									  end
+							4'b1111 : begin // ???
+									  end
+						  endcase
+						  end
+			endcase
+		end
 endmodule
