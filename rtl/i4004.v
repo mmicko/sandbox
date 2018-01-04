@@ -48,7 +48,7 @@ module i4004(
     reg [2:0] state_r;
     reg [2:0] prev_state_r;
 
-    reg [11:0] PC_r;
+    reg [11:0] PC_r[0:3];
     reg [3:0] OPR_r;
     reg [3:0] OPA_r;
 
@@ -58,9 +58,8 @@ module i4004(
     reg [3:0] ACC_r;
 	reg CARRY_r; 
     reg [7:0] RP_r[0:7];
-	reg [11:0] STACK_r[0:2];
 	
-	reg [1:0] SP_r;
+	reg [1:0] PC_current_r;
 	
 	reg [11:0] TEMP_r;
 	reg extended_r;
@@ -74,11 +73,11 @@ module i4004(
         prev_phi1_r = 0;
         prev_phi2_r = 0;
         state_r = STATE_X3;
-        PC_r = 12'b000000000000;
-		STACK_r[0] = 12'b000000000000;
-		STACK_r[1] = 12'b000000000000;
-		STACK_r[2] = 12'b000000000000;
-		SP_r = 2'b00;
+        PC_r[0] = 12'b000000000000;
+		PC_r[1] = 12'b000000000000;
+		PC_r[2] = 12'b000000000000;
+		PC_r[3] = 12'b000000000000;
+		PC_current_r = 2'b00;
         bus_state_r = 0;     
         ACC_r = 4'b0000;   
 		CARRY_r = 1'b0;
@@ -104,11 +103,6 @@ module i4004(
         if ((PHI2_i == 1'b1) && (prev_phi2_r == 1'b0)) //  phi2 edge
         begin
             state_r <= state_r + 3'b001; // next state
-        end
-
-        if ((state_r == STATE_X2) && (prev_state_r != STATE_X2)) //  when executing X2	
-        begin
-            PC_r <= PC_r + 1;
         end
 
         prev_state_r <= state_r;
@@ -149,16 +143,16 @@ module i4004(
 		begin
 		end 
         else if (state_r==STATE_A1)
-            data_r[3:0] <= PC_r[3:0];
+            data_r[3:0] <= PC_r[PC_current_r][3:0];
         else if (state_r==STATE_A2) 
-            data_r[3:0] <= PC_r[7:4];
+            data_r[3:0] <= PC_r[PC_current_r][7:4];
         else if (state_r==STATE_A3) 
-            data_r[3:0] <= PC_r[11:8];
+            data_r[3:0] <= PC_r[PC_current_r][11:8];
         else if (state_r==STATE_M1) 
             TEMP_r[7:4] <= D_io[3:0];
         else if (state_r==STATE_M2)   
 		begin
-			//$display("PC : %03h",PC_r[11:0]);
+			//$display("PC : %03h",PC_r[PC_current_r][11:0]);
 			TEMP_r[3:0] <= D_io[3:0];
 			if (extended_r == 0)
 			begin		
@@ -184,9 +178,14 @@ module i4004(
 			  extended_r <= 0;
 			end
 		end
-        else if (state_r == STATE_X1 && extended_r==0)
+        else if (state_r == STATE_X1)
         begin
-			$display("%03h",PC_r[11:0]);
+			PC_r[PC_current_r] <= PC_r[PC_current_r] + 1;
+			if (extended_r==0)
+			$display("PC[0] %03h",PC_r[0][11:0]);
+			$display("PC[1] %03h",PC_r[1][11:0]);
+			$display("PC[2] %03h",PC_r[2][11:0]);
+			$display("PC[3] %03h",PC_r[3][11:0]);			
 			case(OPR_r)
 				4'b0000 : $display("NOP");// NOP 
 				4'b0001 : begin // JCN *
@@ -196,6 +195,7 @@ module i4004(
 						  if (TEMP_r[8]==1'b0)
 						  begin
 						  	$display("FIM %d %2h",TEMP_r[11:9],TEMP_r[7:0]);
+							RP_r[TEMP_r[11:9]] <= TEMP_r[7:0];
 						  end
 						  else
 						  begin
@@ -214,9 +214,13 @@ module i4004(
 						  end
 				4'b0100 : begin // JUN *
 						  $display("JUN %3h",TEMP_r[11:0]);
+						  PC_r[PC_current_r] <= TEMP_r[11:0];
 						  end
 				4'b0101 : begin // JMS *
 						  $display("JMS %3h",TEMP_r[11:0]);
+						  PC_current_r = PC_current_r - 1;
+						  PC_r[PC_current_r] <= TEMP_r[11:0];
+						  $display("PC_current_r %h",PC_current_r);
 						  end
 				4'b0110 : begin // INC 
 						  $display("INC %d",OPA_r[3:0]);
@@ -238,6 +242,7 @@ module i4004(
 						  end
 				4'b1100 : begin // BBL 
 						  $display("BBL 0x%1h",OPA_r[3:0]);
+						  ACC_r <= OPA_r[3:0];
 						  end
 				4'b1101 : begin // LDM 
 						  $display("LDM 0x%1h",OPA_r[3:0]);
