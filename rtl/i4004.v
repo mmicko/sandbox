@@ -210,6 +210,7 @@ module i4004(
 						  else
 						  begin
 							$display("JIN %d",TEMP_r[11:9]);
+							PC_r[PC_current_r] <= { PC_r[PC_current_r][11:8], RP_r[TEMP_r[11:9]] };
 						  end						
 						  end
 				4'b0100 : begin // JUN *
@@ -246,6 +247,7 @@ module i4004(
 						  end
 				4'b1101 : begin // LDM 
 						  $display("LDM 0x%1h",OPA_r[3:0]);
+						  ACC_r <= OPA_r[3:0];
 						  end
 				4'b1110 : begin // I/O and RAM 
 						  case(OPA_r)
