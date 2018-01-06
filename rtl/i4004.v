@@ -63,6 +63,7 @@ module i4004(
 	
 	reg [11:0] TEMP_r;
 	reg extended_r;
+	reg [7:0] RC_r;
 
     //----------------------------------------------------------------
     // Initial state set
@@ -81,14 +82,15 @@ module i4004(
         bus_state_r = 0;     
         ACC_r = 4'b0000;   
 		CARRY_r = 1'b0;
-        RP_r[0] = 4'b0000;
-        RP_r[1] = 4'b0000;
-        RP_r[2] = 4'b0000;
-        RP_r[3] = 4'b0000;
-        RP_r[4] = 4'b0000;
-        RP_r[5] = 4'b0000;
-        RP_r[6] = 4'b0000;
-        RP_r[7] = 4'b0000;
+        RP_r[0] = 8'b00000000;
+        RP_r[1] = 8'b00000000;
+        RP_r[2] = 8'b00000000;
+        RP_r[3] = 8'b00000000;
+        RP_r[4] = 8'b00000000;
+        RP_r[5] = 8'b00000000;
+        RP_r[6] = 8'b00000000;
+        RP_r[7] = 8'b00000000;
+		RC_r = 8'b00000000;
 		extended_r = 0;
     end
 
@@ -181,6 +183,7 @@ module i4004(
 		end
         else if (state_r == STATE_X1)
         begin
+			data_r[3:0] <= TEMP_r[3:0];
 			$display("%03h ACC_r=%02h CARRY_r %d",PC_r[PC_current_r][11:0],ACC_r,CARRY_r);
 			$display("R01=%02h R23=%02h R45=%02h R67=%02h R89=%02h Rab=%02h Rcd=%02h Ref=%02h",RP_r[0],RP_r[1],RP_r[2],RP_r[3],RP_r[4],RP_r[5],RP_r[6],RP_r[7]);
 			PC_r[PC_current_r] <= PC_r[PC_current_r] + 1;
@@ -213,12 +216,15 @@ module i4004(
 						  else
 						  begin
 							$display("SCR %d",TEMP_r[11:9]);
+							RC_r <= RP_r[TEMP_r[11:9]]; 
 						  end						
 						  end
 				4'b0011 : begin // FIN / JIN
 						  if (TEMP_r[8]==1'b0)
 						  begin
 						  	$display("FIN %d",TEMP_r[11:9]);
+							$display("read from %02h",RP_r[0]);
+							//RP_r[TEMP_r[11:9]] <= TEMP_r[7:0];
 						  end
 						  else
 						  begin
@@ -421,5 +427,11 @@ module i4004(
 						  end
 			endcase
 		end
+        else if (state_r == STATE_X2)
+        begin
+		end
+        else if (state_r == STATE_X2)
+        begin
+		end		
 	end
 endmodule
