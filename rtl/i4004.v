@@ -169,6 +169,7 @@ module i4004(
 				else
 				begin
 					extended_r <= 0;
+					TEMP_r[11:8] <= D_io[3:0];
 					OPR_r <= TEMP_r[7:4];
 					OPA_r <= D_io[3:0];
 				end
@@ -180,7 +181,8 @@ module i4004(
 		end
         else if (state_r == STATE_X1)
         begin
-			$display("%03h ",PC_r[PC_current_r][11:0]);
+			$display("%03h ACC_r=%02h CARRY_r %d",PC_r[PC_current_r][11:0],ACC_r,CARRY_r);
+			$display("R01=%02h R23=%02h R45=%02h R67=%02h R89=%02h Rab=%02h Rcd=%02h Ref=%02h",RP_r[0],RP_r[1],RP_r[2],RP_r[3],RP_r[4],RP_r[5],RP_r[6],RP_r[7]);
 			PC_r[PC_current_r] <= PC_r[PC_current_r] + 1;
 			if (extended_r==0)
 			case(OPR_r)
@@ -235,7 +237,7 @@ module i4004(
 						  end
 				4'b0110 : begin // INC 
 						  $display("INC %d",OPA_r[3:0]);
-						  if (OPA_r[0]==0)
+						  if (OPA_r[0]==1)
 						  	RP_r[OPA_r[3:1]][3:0] <= RP_r[OPA_r[3:1]][3:0] + 1;
 						  else
 						  	RP_r[OPA_r[3:1]][7:4] <= RP_r[OPA_r[3:1]][7:4] + 1;
@@ -245,28 +247,28 @@ module i4004(
 						  end
 				4'b1000 : begin // ADD 
 						  $display("ADD %d",OPA_r[3:0]);
-						  if (OPA_r[0]==0)
+						  if (OPA_r[0]==1)
 						  	{ CARRY_r , ACC_r } <= ACC_r + RP_r[OPA_r[3:1]][3:0];
 						  else
 						  	{ CARRY_r , ACC_r } <= ACC_r + RP_r[OPA_r[3:1]][7:4];
 						  end
 				4'b1001 : begin // SUB 
 						  $display("SUB %d",OPA_r[3:0]);
-						  if (OPA_r[0]==0)
+						  if (OPA_r[0]==1)
 						  	{ CARRY_r , ACC_r } <= ACC_r - RP_r[OPA_r[3:1]][3:0];
 						  else
 						  	{ CARRY_r , ACC_r } <= ACC_r - RP_r[OPA_r[3:1]][7:4];
 						  end
 				4'b1010 : begin // LD
 						  $display("LD %d",OPA_r[3:0]);
-						  if (OPA_r[0]==0)
+						  if (OPA_r[0]==1)
 						  	ACC_r <= RP_r[OPA_r[3:1]][3:0];
 						  else
 						  	ACC_r <= RP_r[OPA_r[3:1]][7:4];						  
 						  end
 				4'b1011 : begin // XCH
 						  $display("XCH %d",OPA_r[3:0]);
-						  if (OPA_r[0]==0)
+						  if (OPA_r[0]==1)
 						  begin
 						  	ACC_r  <= RP_r[OPA_r[3:1]][3:0];
 							RP_r[OPA_r[3:1]][3:0] <= ACC_r;
@@ -280,6 +282,7 @@ module i4004(
 				4'b1100 : begin // BBL 
 						  $display("BBL 0x%1h",OPA_r[3:0]);
 						  ACC_r <= OPA_r[3:0];
+						  PC_current_r <= PC_current_r + 1;
 						  end
 				4'b1101 : begin // LDM 
 						  $display("LDM 0x%1h",OPA_r[3:0]);
