@@ -180,17 +180,28 @@ module i4004(
 		end
         else if (state_r == STATE_X1)
         begin
+			$display("%03h ",PC_r[PC_current_r][11:0]);
 			PC_r[PC_current_r] <= PC_r[PC_current_r] + 1;
 			if (extended_r==0)
-			$display("PC[0] %03h",PC_r[0][11:0]);
-			$display("PC[1] %03h",PC_r[1][11:0]);
-			$display("PC[2] %03h",PC_r[2][11:0]);
-			$display("PC[3] %03h",PC_r[3][11:0]);			
 			case(OPR_r)
 				4'b0000 : $display("NOP");// NOP 
 				4'b0001 : begin // JCN *
 						  $display("JCN %1h %02h",TEMP_r[11:8],TEMP_r[7:0]);
+						  if (TEMP_r[11]==1'b0)
+						  begin
+						  	if (((ACC_r==0) & TEMP_r[10]) || ((CARRY_r==1) & TEMP_r[9]) || (~TEST_i & TEMP_r[8]))
+							begin
+							  PC_r[PC_current_r][7:0] <= TEMP_r[7:0];
+							end
 						  end
+						  else
+						  begin
+						  	if (((ACC_r!=0) & TEMP_r[10]) || ((CARRY_r!=1) & TEMP_r[9]) || (TEST_i & TEMP_r[8]))
+							begin
+							  PC_r[PC_current_r][7:0] <= TEMP_r[7:0];
+							end							
+						  end						   
+						end
 				4'b0010 : begin // FIM */ SRC 
 						  if (TEMP_r[8]==1'b0)
 						  begin
@@ -221,25 +232,50 @@ module i4004(
 						  $display("JMS %3h",TEMP_r[11:0]);
 						  PC_current_r = PC_current_r - 1;
 						  PC_r[PC_current_r] <= TEMP_r[11:0];
-						  $display("PC_current_r %h",PC_current_r);
 						  end
 				4'b0110 : begin // INC 
 						  $display("INC %d",OPA_r[3:0]);
+						  if (OPA_r[0]==0)
+						  	RP_r[OPA_r[3:1]][3:0] <= RP_r[OPA_r[3:1]][3:0] + 1;
+						  else
+						  	RP_r[OPA_r[3:1]][7:4] <= RP_r[OPA_r[3:1]][7:4] + 1;
 						  end
 				4'b0111 : begin // ISZ *
 						  $display("ISZ %d %02h",TEMP_r[11:8],TEMP_r[7:0]);
 						  end
 				4'b1000 : begin // ADD 
 						  $display("ADD %d",OPA_r[3:0]);
+						  if (OPA_r[0]==0)
+						  	{ CARRY_r , ACC_r } <= ACC_r + RP_r[OPA_r[3:1]][3:0];
+						  else
+						  	{ CARRY_r , ACC_r } <= ACC_r + RP_r[OPA_r[3:1]][7:4];
 						  end
 				4'b1001 : begin // SUB 
 						  $display("SUB %d",OPA_r[3:0]);
+						  if (OPA_r[0]==0)
+						  	{ CARRY_r , ACC_r } <= ACC_r - RP_r[OPA_r[3:1]][3:0];
+						  else
+						  	{ CARRY_r , ACC_r } <= ACC_r - RP_r[OPA_r[3:1]][7:4];
 						  end
 				4'b1010 : begin // LD
 						  $display("LD %d",OPA_r[3:0]);
+						  if (OPA_r[0]==0)
+						  	ACC_r <= RP_r[OPA_r[3:1]][3:0];
+						  else
+						  	ACC_r <= RP_r[OPA_r[3:1]][7:4];						  
 						  end
 				4'b1011 : begin // XCH
 						  $display("XCH %d",OPA_r[3:0]);
+						  if (OPA_r[0]==0)
+						  begin
+						  	ACC_r  <= RP_r[OPA_r[3:1]][3:0];
+							RP_r[OPA_r[3:1]][3:0] <= ACC_r;
+						  end
+						  else
+						  begin
+						  	ACC_r  <= RP_r[OPA_r[3:1]][7:4];
+							RP_r[OPA_r[3:1]][7:4] <= ACC_r;
+						  end
 						  end
 				4'b1100 : begin // BBL 
 						  $display("BBL 0x%1h",OPA_r[3:0]);
@@ -326,12 +362,16 @@ module i4004(
 									  end
 							4'b0101 : begin // RAL
 									  $display("RAL");
+									   { CARRY_r, ACC_r[3:0] } <=  { ACC_r[3:0], CARRY_r };
 									  end
 							4'b0110 : begin // RAR
 									  $display("RAR");
+									  { CARRY_r, ACC_r } <=  { ACC_r[0], CARRY_r,  ACC_r[3:1]};
 									  end
 							4'b0111 : begin // TCC
 									  $display("TCC");
+									  ACC_r <= { 3'b000, CARRY_r };	
+									  CARRY_r <= 1'b0;								  	
 									  end
 							4'b1000 : begin // DAC
 									  $display("DAC");
@@ -339,15 +379,31 @@ module i4004(
 									  end
 							4'b1001 : begin // TCS
 									  $display("TCS");					
+									  if (CARRY_r==1'b0)
+									  	ACC_r <= 9;
+									  else 
+										ACC_r <= 10;
+									  CARRY_r <= 1'b0;
 									  end
 							4'b1010 : begin // STC
 									  $display("STC");
+									  CARRY_r <= 1'b1;
 									  end
 							4'b1011 : begin // DAA
 									  $display("DAA");
+									  if (ACC_r > 9 || CARRY_r==1)
+									  	ACC_r <= ACC_r + 6;
 									  end
 							4'b1100 : begin // KBP
 									  $display("KBP");
+									  case(ACC_r)
+									    4'b0000 : ACC_r <= 4'b0000;
+										4'b0001 : ACC_r <= 4'b0001;
+										4'b0010 : ACC_r <= 4'b0010;
+										4'b0100 : ACC_r <= 4'b0011;
+										4'b1000 : ACC_r <= 4'b0100;
+									  	default : ACC_r <= 4'b1111;
+									  endcase
 									  end
 							4'b1101 : begin // DCL
 									  $display("DCL");
