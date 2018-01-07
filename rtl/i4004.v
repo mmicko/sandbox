@@ -127,7 +127,9 @@ module i4004(
     // Setting CM_ROM output pin
     //----------------------------------------------------------------
     always @*
-        if (state_r==STATE_A3)
+        if ((state_r==STATE_A3) || 
+		   ((state_r==STATE_M2) && (OPR_r == 4'b1110 )) || // I/O and RAM
+   		   ((state_r==STATE_X2) && (OPR_r == 4'b0010 ) && (TEMP_r[8]==1'b1))) // SRC
 		begin 
             CM_ROM_o = 0;
 			CM_RAM_o[0] = (CM_r==3'b000) ? 1 : 0;
@@ -436,6 +438,7 @@ module i4004(
 									  end
 							4'b1101 : begin // DCL
 									  $display("DCL");
+									  CM_r <= ACC_r[2:0];
 									  end
 							4'b1110 : begin // ???
 									  $display("???");
