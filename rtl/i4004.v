@@ -28,8 +28,8 @@ module i4004(
     input PHI1_i,
     input PHI2_i,
     output reg SYNC_o,
-    output [2:0] CM_RAM_o,
-    output CM_ROM_o,
+    output reg [3:0] CM_RAM_o,
+    output reg CM_ROM_o,
     input TEST_i,
     input RESET_i
 );
@@ -64,6 +64,7 @@ module i4004(
 	reg [11:0] TEMP_r;
 	reg extended_r;
 	reg [7:0] RC_r;
+	reg [2:0] CM_r;
 
     //----------------------------------------------------------------
     // Initial state set
@@ -91,6 +92,7 @@ module i4004(
         RP_r[6] = 8'b00000000;
         RP_r[7] = 8'b00000000;
 		RC_r = 8'b00000000;
+		CM_r = 3'b000;
 		extended_r = 0;
     end
 
@@ -120,6 +122,24 @@ module i4004(
             SYNC_o = 0;
         else
             SYNC_o = 1;
+
+    //----------------------------------------------------------------
+    // Setting CM_ROM output pin
+    //----------------------------------------------------------------
+    always @*
+        if (state_r==STATE_A3)
+		begin 
+            CM_ROM_o = 0;
+			CM_RAM_o[0] = (CM_r==3'b000) ? 1 : 0;
+			CM_RAM_o[1] = CM_r[0];
+			CM_RAM_o[2] = CM_r[1];
+			CM_RAM_o[3] = CM_r[2];
+		end
+        else
+		begin
+            CM_ROM_o = 1;
+			CM_RAM_o = 4'b1111;
+		end
 
     //----------------------------------------------------------------
     // Setting data/address bus
