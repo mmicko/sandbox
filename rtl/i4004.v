@@ -129,7 +129,7 @@ module i4004(
     always @*
         if ((state_r==STATE_A3) || 
 		   ((state_r==STATE_M2) && (OPR_r == 4'b1110 )) || // I/O and RAM
-   		   ((state_r==STATE_X2) && (OPR_r == 4'b0010 ) && (TEMP_r[8]==1'b1))) // SRC
+   		   ((state_r==STATE_X2) && (OPR_r == 4'b0010 ) && (OPA_r[0]==1'b1))) // SRC
 		begin 
             CM_ROM_o = 0;
 			CM_RAM_o[0] = (CM_r==3'b000) ? 1 : 0;
@@ -167,7 +167,10 @@ module i4004(
 		begin
 		end 
         else if (state_r==STATE_A1)
+		begin
             data_r[3:0] <= PC_r[PC_current_r][3:0];
+			TEMP_r[11:0] <= 12'b000000000000;
+		end
         else if (state_r==STATE_A2) 
             data_r[3:0] <= PC_r[PC_current_r][7:4];
         else if (state_r==STATE_A3) 
