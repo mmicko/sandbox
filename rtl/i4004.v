@@ -216,7 +216,7 @@ module i4004(
 			case(OPR_r)
 				4'b0000 : $display("NOP");// NOP 
 				4'b0001 : begin // JCN *
-						  $display("JCN %1h %02h",TEMP_r[11:8],TEMP_r[7:0]);
+						  $display("JCN %d,0x%02h",TEMP_r[11:8],TEMP_r[7:0]);
 						  if (TEMP_r[11]==1'b0)
 						  begin
 						  	if (((ACC_r==0) & TEMP_r[10]) || ((CARRY_r==1) & TEMP_r[9]) || (~TEST_i & TEMP_r[8]))
@@ -235,70 +235,69 @@ module i4004(
 				4'b0010 : begin // FIM */ SRC 
 						  if (TEMP_r[8]==1'b0)
 						  begin
-						  	$display("FIM %d %2h",TEMP_r[11:9],TEMP_r[7:0]);
+						  	$display("FIM %dP,0x%2h",TEMP_r[11:9],TEMP_r[7:0]);
 							RP_r[TEMP_r[11:9]] <= TEMP_r[7:0];
 						  end
 						  else
 						  begin
-							$display("SCR %d",TEMP_r[11:9]);
+							$display("SCR %dP",TEMP_r[11:9]);
 							RC_r <= RP_r[TEMP_r[11:9]]; 
 						  end						
 						  end
 				4'b0011 : begin // FIN / JIN
 						  if (TEMP_r[8]==1'b0)
 						  begin
-						  	$display("FIN %d",TEMP_r[11:9]);
-							$display("read from %02h",RP_r[0]);
+						  	$display("FIN %dP",TEMP_r[11:9]);
 							//RP_r[TEMP_r[11:9]] <= TEMP_r[7:0];
 						  end
 						  else
 						  begin
-							$display("JIN %d",TEMP_r[11:9]);
+							$display("JIN %dP",TEMP_r[11:9]);
 							PC_r[PC_current_r] <= { PC_r[PC_current_r][11:8], RP_r[TEMP_r[11:9]] };
 						  end						
 						  end
 				4'b0100 : begin // JUN *
-						  $display("JUN %3h",TEMP_r[11:0]);
+						  $display("JUN 0x%3h",TEMP_r[11:0]);
 						  PC_r[PC_current_r] <= TEMP_r[11:0];
 						  end
 				4'b0101 : begin // JMS *
-						  $display("JMS %3h",TEMP_r[11:0]);
+						  $display("JMS 0x%3h",TEMP_r[11:0]);
 						  PC_current_r = PC_current_r - 1;
 						  PC_r[PC_current_r] <= TEMP_r[11:0];
 						  end
 				4'b0110 : begin // INC 
-						  $display("INC %d",OPA_r[3:0]);
+						  $display("INC R%d",OPA_r[3:0]);
 						  if (OPA_r[0]==1)
 						  	RP_r[OPA_r[3:1]][3:0] <= RP_r[OPA_r[3:1]][3:0] + 1;
 						  else
 						  	RP_r[OPA_r[3:1]][7:4] <= RP_r[OPA_r[3:1]][7:4] + 1;
 						  end
 				4'b0111 : begin // ISZ *
-						  $display("ISZ %d %02h",TEMP_r[11:8],TEMP_r[7:0]);
+						  $display("ISZ R%d,%02h",TEMP_r[11:8],TEMP_r[7:0]);
 						  end
 				4'b1000 : begin // ADD 
-						  $display("ADD %d",OPA_r[3:0]);
+						  $display("ADD R%d",OPA_r[3:0]);
 						  if (OPA_r[0]==1)
 						  	{ CARRY_r , ACC_r } <= ACC_r + RP_r[OPA_r[3:1]][3:0];
 						  else
 						  	{ CARRY_r , ACC_r } <= ACC_r + RP_r[OPA_r[3:1]][7:4];
 						  end
 				4'b1001 : begin // SUB 
-						  $display("SUB %d",OPA_r[3:0]);
+						  $display("SUB R%d",OPA_r[3:0]);
 						  if (OPA_r[0]==1)
 						  	{ CARRY_r , ACC_r } <= ACC_r - RP_r[OPA_r[3:1]][3:0];
 						  else
 						  	{ CARRY_r , ACC_r } <= ACC_r - RP_r[OPA_r[3:1]][7:4];
 						  end
 				4'b1010 : begin // LD
-						  $display("LD %d",OPA_r[3:0]);
+						  $display("LD R%d",OPA_r[3:0]);
 						  if (OPA_r[0]==1)
 						  	ACC_r <= RP_r[OPA_r[3:1]][3:0];
 						  else
 						  	ACC_r <= RP_r[OPA_r[3:1]][7:4];						  
 						  end
 				4'b1011 : begin // XCH
-						  $display("XCH %d",OPA_r[3:0]);
+						  $display("XCH R%d",OPA_r[3:0]);
 						  if (OPA_r[0]==1)
 						  begin
 						  	ACC_r  <= RP_r[OPA_r[3:1]][3:0];
