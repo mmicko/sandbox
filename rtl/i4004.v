@@ -66,6 +66,8 @@ module i4004(
 	reg [7:0] RC_r;
 	reg [2:0] CM_r;
 
+	reg is_src_r;
+
     //----------------------------------------------------------------
     // Initial state set
     //----------------------------------------------------------------
@@ -94,6 +96,7 @@ module i4004(
 		RC_r = 8'b00000000;
 		CM_r = 3'b000;
 		extended_r = 0;
+		is_src_r = 0;
     end
 
     //----------------------------------------------------------------
@@ -156,7 +159,12 @@ module i4004(
         if ((state_r==STATE_A1) || (state_r==STATE_A2) || (state_r==STATE_A3))
             bus_state_r = 1'b0;
         else 
-            bus_state_r = 1'b1;
+		begin
+		 	if ((is_src_r==1) && ((state_r==STATE_X1) || (state_r==STATE_X2)))
+				bus_state_r = 1'b0;
+			else
+            	bus_state_r = 1'b1;
+		end
 
     //----------------------------------------------------------------
     // Address on databus
@@ -208,6 +216,7 @@ module i4004(
 		end
         else if (state_r == STATE_X1)
         begin
+			is_src_r <= (OPR_r == 4'b0010 ) && (OPA_r[0]==1'b1);
 			data_r[3:0] <= TEMP_r[3:0];
 			$display("%03h ACC_r=%02h CARRY_r %d",PC_r[PC_current_r][11:0],ACC_r,CARRY_r);
 			$display("R01=%02h R23=%02h R45=%02h R67=%02h R89=%02h Rab=%02h Rcd=%02h Ref=%02h",RP_r[0],RP_r[1],RP_r[2],RP_r[3],RP_r[4],RP_r[5],RP_r[6],RP_r[7]);
@@ -454,9 +463,13 @@ module i4004(
 		end
         else if (state_r == STATE_X2)
         begin
+			if (is_src_r)
+				data_r[3:0] <= RC_r[7:4];
 		end
         else if (state_r == STATE_X2)
         begin
+			if (is_src_r)
+				data_r[3:0] <= RC_r[3:0];
 		end		
 	end
 endmodule
