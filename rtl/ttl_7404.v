@@ -1,14 +1,14 @@
 /*
-    74244	
+    TTL 7404	
     Hex Inverter
     
-    74LS05	
+    TTL 7405	
     Hex Inverter; Open Collector Outputs
     
-    74LS06	
+    TTL 7406	
     Hex Inverter; Open Collector High Voltage Outputs
     
-    74LS07	
+    TTL 7407	
     Hex Buffer; Open Collector High Voltage Outputs
                 _____   _____
         1A   1 |*    \_/     | 14  Vcc
