@@ -1,5 +1,5 @@
 /*
-    74LS04	
+    74244	
     Hex Inverter
     
     74LS05	
@@ -21,17 +21,17 @@
 */
 
 module ttl_7404(
-    input  A1, output Y1,
-    input  A2, output Y2,
-    input  A3, output Y3,
-    input  A4, output Y4,
-    input  A5, output Y5,
-    input  A6, output Y6
+    input _1A, output _1Y,
+    input _2A, output _2Y,
+    input _3A, output _3Y,
+    input _4A, output _4Y,
+    input _5A, output _5Y,
+    input _6A, output _6Y
 );
-    not(Y1,A1);
-    not(Y2,A2);
-    not(Y3,A3);
-    not(Y4,A4);
-    not(Y5,A5);
-    not(Y6,A6);    
+    not(_1Y,_1A);
+    not(_2Y,_2A);
+    not(_3Y,_3A);
+    not(_4Y,_4A);
+    not(_5Y,_5A);
+    not(_6Y,_6A);    
 endmodule

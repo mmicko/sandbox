@@ -10,8 +10,8 @@ module mcs4_clk_gen(
     
     initial
     begin
-        PHI1_o <= 1;
-        PHI2_o <= 1;
+        PHI1_o = 1;
+        PHI2_o = 1;
     end
 
     always @(posedge clk_i)

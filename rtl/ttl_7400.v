@@ -26,26 +26,27 @@
 */
 
 module ttl_7400(
-    input  A1, input  B1, output Y1,
-    input  A2, input  B2, output Y2,
-    input  A3, input  B3, output Y3,
-    input  A4, input  B4, output Y4
+    input _1A, input _1B, output _1Y,
+    input _2A, input _2B, output _2Y,
+    input _3A, input _3B, output _3Y,
+    input _4A, input _4B, output _4Y
 );
-    nand(Y1,A1,B1);
-    nand(Y2,A2,B2);
-    nand(Y3,A3,B3);
-    nand(Y4,A4,B4);
+    nand(_1Y,_1A,_1B);
+    nand(_2Y,_2A,_2B);
+    nand(_3Y,_3A,_3B);
+    nand(_4Y,_4A,_4B);
 endmodule
 
-
+/*
 module ttl_7401(
-    input  A1, input  B1, output Y1,
-    input  A2, input  B2, output Y2,
-    input  A3, input  B3, output Y3,
-    input  A4, input  B4, output Y4
+    input _1A, input _1B, output _1Y,
+    input _2A, input _2B, output _2Y,
+    input _3A, input _3B, output _3Y,
+    input _4A, input _4B, output _4Y
 );
-    nand(Y1,A1,B1);
-    nand(Y2,A2,B2);
-    nand(Y3,A3,B3);
-    nand(Y4,A4,B4);
+    nand(_1Y,_1A,_1B);
+    nand(_2Y,_2A,_2B);
+    nand(_3Y,_3A,_3B);
+    nand(_4Y,_4A,_4B);
 endmodule
+*/
