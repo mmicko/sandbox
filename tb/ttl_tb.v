@@ -4,25 +4,67 @@
 */
 module ttl_tb();
 
-	wire [7:0] r;
-	wire [7:0] w;
-	reg g1;
-	reg g2;
+	//wire [7:0] r;
+	//wire [7:0] w;
+	//reg g1;
+	//reg g2;
 
-	reg [2:0] a;
-	reg e1;
-	reg e2;
-	reg e3;
+	//reg [2:0] a;
+	//reg e1;
+	//reg e2;
+	//reg e3;
 
-	ttl_74244 b(._1G_n(g1),._1A(r[3:0]),._1Y(w[3:0]),._2G_n(g2),._2A(r[7:4]),._2Y(w[7:4]));
+	//ttl_74244 b(._1G_n(g1),._1A(r[3:0]),._1Y(w[3:0]),._2G_n(g2),._2A(r[7:4]),._2Y(w[7:4]));
 	
-	ttl_74138 dec(.A(a),.E1_n(e1),.E2_n(e2),.E3(e3),.Y(r));
-
+	//ttl_74138 dec(.A(a),.E1_n(e1),.E2_n(e2),.E3(e3),.Y(r));
+    
+	reg g;
+	reg c;
+	reg a;
+	reg b;
+	wire [7:0] r;
+	ttl_74155 dem(._1C(c),._1G_n(g),._2G_n(g),.A(a),.B(b),._2C_n(~c),._1Y(r[3:0]),._2Y(r[7:4]));
 	initial
 	begin
 		$dumpfile("ttl_tb.vcd");
 		$dumpvars(0, ttl_tb);
-		e1 = 1;
+		g = 0;
+		
+		
+		c = 0;
+		b = 0;
+		a = 0;
+		#20
+		c = 0;
+		b = 0;
+		a = 1;
+		#20
+		c = 0;
+		b = 1;
+		a = 0;
+		#20
+		c = 0;
+		b = 1;
+		a = 1;
+		#20
+		c = 1;
+		b = 0;
+		a = 0;
+		#20
+		c = 1;
+		b = 0;
+		a = 1;
+		#20
+		c = 1;
+		b = 1;
+		a = 0;
+		#20
+		c = 1;
+		b = 1;
+		a = 1;
+		#20
+		g = 1;
+	/*	e1 = 1;
 		e2 = 1;
 		e3 = 1;
 		g1 = 1;
@@ -34,7 +76,7 @@ module ttl_tb();
 		e2 = 0;
 		#50
 		g1 = 0;
-		g2 = 0;
+		g2 = 0;*/
 		#100		
 		$finish;
 	end
